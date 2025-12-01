@@ -687,6 +687,10 @@ ol {
 }
 
 /* H O M E */
+.home {
+  padding-top: 3.5rem;
+}
+
 #intro ul li {
   font-size: 5rem;
   text-align: left;

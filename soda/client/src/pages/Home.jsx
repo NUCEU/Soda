@@ -1,6 +1,6 @@
 export default function Home() {
   return (
-    <div>
+    <div className='home'>
       <section id='intro'>
         <ul>
           <li>INTUITIVE UI</li>
