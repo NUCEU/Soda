@@ -1,0 +1,301 @@
+/* 공통 */
+body.is-locked {
+  overflow: hidden;
+} /* (옵션) JS에서 body에 붙이고/떼도 됨 */
+
+* {
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: var(--font);
+  position: relative;
+}
+body::before {
+  content: '';
+  z-index: 222;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: exclusion;
+  background-image: url('../../../public/texture_background.webp');
+  background-position: 0px 0px;
+
+  position: absolute;
+  inset: 0% auto 0% auto;
+  opacity: 0.05;
+}
+
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.section {
+  padding: 40px 0;
+}
+.muted {
+  color: var(--muted);
+}
+
+// 헤더 영역 시작
+header.site-header {
+  color: #fff;
+  background: #ffebd8;
+  .site-title {
+    margin: 0;
+    font-size: 40px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: -0.02em;
+  }
+  .container {
+    padding: 10px 0;
+  }
+}
+
+.site-subtitle {
+  margin: 6px 0 0;
+  opacity: 0.9;
+}
+// --- nav 시작 ----
+nav.nav {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+
+  /* nav 자체는 투명/터치막음 처리하지 않음 */
+  background: transparent;
+  z-index: 500; /* body::before (222)보다 크게 */
+
+  .container {
+    z-index: 500;
+    width: 100%;
+    height: 100%;
+    position: relative;
+
+    /* 메뉴 버튼은 항상 보이게: 화면 고정 + 높은 z-index */
+    .menu-btn {
+      position: fixed; /* ← absolute → fixed 로 변경 */
+      top: 2rem;
+      left: 1.5rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: none;
+      background: none;
+      padding: 0;
+      z-index: 500; /* body::before, 패널보다 위 */
+
+      div {
+        position: absolute;
+        width: 100%;
+        height: 0.225rem;
+        cursor: pointer;
+        transition: 0.3s;
+        background-color: #0d0d0d;
+
+        &:nth-child(1) {
+          transform: translateY(-0.65rem);
+        }
+        &:nth-child(2) {
+          opacity: 1;
+        }
+        &:nth-child(3) {
+          transform: translateY(0.65rem);
+        }
+      }
+
+      &.open {
+        div {
+          &:nth-child(1) {
+            transform: rotate(45deg);
+          }
+          &:nth-child(2) {
+            opacity: 0;
+          }
+          &:nth-child(3) {
+            transform: rotate(-45deg);
+          }
+        }
+      }
+    }
+    /* ▼ 오버레이 패널은 section 에서만 제어 */
+    section {
+      padding-top: 4.5rem;
+      position: fixed; /* 화면 전체 덮는 실제 패널 */
+      inset: 0;
+      width: 100%;
+      height: 100vh;
+      //background-color: #dbf7b0; /* 기존 배경 이동 */
+
+      /* 기본: 닫힘 상태 */
+      opacity: 0;
+
+      pointer-events: none;
+      transform: translateY(-8%);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+  }
+  /* 열림 상태에서만 패널 보여주기 */
+  &.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    background-color: #dbf7b0;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    section {
+      opacity: 1;
+      pointer-events: auto;
+      .nav-list {
+        display: block;
+        padding-top: 2rem;
+        margin: 0.2rem 0 0 0;
+        list-style: none;
+
+        li {
+          font-size: 7.2rem;
+
+          a {
+            color: #0d0d0d;
+            border-radius: 10px;
+            display: inline-block;
+
+            &:hover,
+            &:focus-visible {
+              outline: 2px solid #0d0d0d;
+              outline-offset: 4px;
+            }
+          }
+        }
+      }
+
+      article {
+        opacity: 1;
+        pointer-events: auto;
+        position: absolute;
+        top: 20%;
+        bottom: 1.75rem;
+        right: 1.75rem;
+        .aboutme {
+          background-color: #202020;
+          padding: 1rem 1.25rem;
+          color: #121212;
+          strong {
+            color: #f8fafc;
+            text-align: center;
+            margin-right: 1.56rem;
+          }
+          a {
+            width: 20rem;
+            height: auto;
+            border-radius: 0.75rem;
+            background-image: url('../../../public/about_p.JPG');
+            background-repeat: no-repeat;
+            background-position: 90% 65%;
+            background-size: cover;
+            padding: 6rem 0;
+            filter: grayscale(100%);
+            transition: filter 0.3s;
+          }
+          :hover {
+            filter: grayscale(0%);
+          }
+        }
+        .contact {
+          margin-top: 1rem;
+          border: 1px solid #0d0d0d;
+          position: relative;
+        }
+        div {
+          border-radius: 0.75rem;
+          padding: 1rem 1.25rem;
+          display: flex;
+
+          strong.text-rotate {
+            margin-right: 1.56rem;
+            writing-mode: vertical-rl;
+            rotate: 180deg;
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(bgc);
+          }
+          ul {
+            position: absolute;
+            padding: 1rem 1.25rem;
+            inset: 0 auto auto 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            li {
+              // margin-top: 1rem;
+              text-align: right;
+              strong {
+                font-weight: 600;
+                font-size: 1.2rem;
+              }
+              span {
+                display: block;
+              }
+            }
+          }
+        }
+      }
+      //}
+    }
+  }
+}
+// --- nav 끝 -----
+.site-main {
+  padding-bottom: 32px;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  color: #eee;
+  padding: 16px 0;
+
+  p {
+    font-size: 1.2rem;
+    text-align: center;
+  }
+  .container {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+  }
+}
+
+.nav-bar {
+}
+/* 반응형 */
+@media only screen and (max-width: 1348px) {
+  :root {
+    --default-width: 92%;
+    --font-title: 4.4rem;
+    --font-sub-title: 2.8rem;
+    --font-text: 1.2rem;
+  }
+}
+
+/* helpers */
+ul,
+ol {
+  padding-left: 18px;
+}
