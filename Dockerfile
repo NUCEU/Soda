@@ -1,37 +1,36 @@
-# Node.js 18 LTS 버전 사용
-FROM node:18-alpine
+# ------------------------------------
+# STAGE 1: Build Stage (Builder)
+# React 빌드 결과물 생성
+# ------------------------------------
+FROM node:18-alpine AS builder
 
-# 작업 디렉토리 설정
 WORKDIR /app
 
-# package.json 복사
-COPY package.json ./
+# package.json 및 잠금 파일 복사
+COPY package*.json ./
 
-# 프로덕션 의존성만 설치 (package-lock.json이 없어도 작동)
-RUN npm install --production --omit=dev
+# 모든 의존성 설치 (개발/프로덕션 모두)
+# 'react-scripts build'를 실행하려면 모든 의존성이 필요합니다.
+RUN npm install
 
-# 애플리케이션 소스 복사
-COPY app.js .
+# 애플리케이션 소스 전체 복사
+COPY . .
 
-# Build arguments (GitHub Actions에서 전달)
-ARG NODE_ENV=production
-ARG PORT=3000
-ARG APP_NAME="My Web App"
+# React 프로젝트 빌드 실행
+# 빌드된 결과물은 /app/build 폴더에 저장됩니다.
+RUN npm run build 
 
-# 환경변수 설정 (Build args를 환경변수로 변환)
-ENV NODE_ENV=${NODE_ENV}
-ENV PORT=${PORT}
-ENV APP_NAME=${APP_NAME}
+# ------------------------------------
+# STAGE 2: Service Stage (Production)
+# Nginx를 사용하여 정적 파일 서빙
+# ------------------------------------
+FROM nginx:alpine
 
-# 포트 노출 (ARG PORT 사용 - 빌드 타임에 평가됨)
-EXPOSE ${PORT}
+# Builder 스테이지에서 생성된 빌드 결과물(정적 파일)을 Nginx 웹 루트로 복사
+COPY --from=builder /app/build /usr/share/nginx/html
 
-# non-root 사용자로 실행 (보안)
-USER node
+# Nginx 기본 포트(80) 노출
+EXPOSE 80
 
-# 헬스체크 추가
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3000) + '/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)}).on('error', () => process.exit(1))"
-
-# 애플리케이션 실행
-CMD ["npm", "start"]
+# Nginx 실행
+CMD ["nginx", "-g", "daemon off;"]
