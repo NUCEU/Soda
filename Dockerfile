@@ -1,23 +1,23 @@
 # ------------------------------------
 # STAGE 1: Build Stage (Builder)
-# React 빌드 결과물 생성
 # ------------------------------------
 FROM node:18-alpine AS builder
 
+# WORKDIR 설정
 WORKDIR /app
 
-# package.json 및 잠금 파일 복사
+# 1. package.json 및 lock 파일만 복사 (npm install 캐시를 위해)
 COPY package*.json ./
 
-# 모든 의존성 설치 (개발/프로덕션 모두)
-# 'react-scripts build'를 실행하려면 모든 의존성이 필요합니다.
+# 2. 모든 의존성 설치
+# build 명령어에 필요한 react-scripts는 여기서 설치됩니다.
 RUN npm install
 
-# 애플리케이션 소스 전체 복사
+# 3. 애플리케이션 소스 전체 복사 (public, src 등)
+# COPY . . 명령은 .dockerignore에 의해 node_modules를 복사하지 않습니다.
 COPY . .
 
-# React 프로젝트 빌드 실행
-# 빌드된 결과물은 /app/build 폴더에 저장됩니다.
+# 4. React 프로젝트 빌드 실행
 RUN npm run build 
 
 # ------------------------------------
@@ -26,7 +26,11 @@ RUN npm run build
 # ------------------------------------
 FROM nginx:alpine
 
-# Builder 스테이지에서 생성된 빌드 결과물(정적 파일)을 Nginx 웹 루트로 복사
+# 1. Nginx 설정 파일 복사
+# 리포지토리 루트에 nginx.conf가 있으므로 이를 복사합니다.
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# 2. Builder 스테이지에서 생성된 빌드 결과물(정적 파일)을 Nginx 웹 루트로 복사
 COPY --from=builder /app/build /usr/share/nginx/html
 
 # Nginx 기본 포트(80) 노출
